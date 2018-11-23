@@ -1,0 +1,22 @@
+{
+  "name": "discordbotutils",
+  "version": "1.0.0",
+  "description": "A collection of typescript utilities to utilize in Discord bots.",
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "discord.js-commando": "^0.8.5",
+    "ffmpeg.js": "^3.1.9001",
+    "node-gyp": "^3.8.0",
+    "opus.js": "^0.1.1",
+    "opusscript": "0.0.2",
+    "ytdl-core": "^0.14.4"
+  },
+  "devDependencies": {
+    "@types/node": "^7.10.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Oltmanns",
+  "license": "MIT"
+}

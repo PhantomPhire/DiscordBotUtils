@@ -1,4 +1,4 @@
-import {Client, VoiceChannel, VoiceConnection} from "discord.js";
+import {VoiceChannel, VoiceConnection} from "discord.js";
 import {VoiceStatus} from "./EVoiceStatus";
 import {Sound} from "./Sound";
 import {EventEmitter} from "events";
@@ -46,15 +46,15 @@ export class GuildVoiceStateManager extends EventEmitter {
      * @param sound The Sound to be played.
      * @returns Returns a promise containing feedback based on the result of the play.
      */
-    public Play(sound: Sound): Promise<string> {
+    public play(sound: Sound): Promise<string> {
         return new Promise( (resolve, reject) => {
-            if (this.connection === undefined)
+            if (this.connection === undefined || this._voiceChannel === undefined)
                 reject("No voice connection");
 
-            sound.Play(this.connection!);
+            sound.play(this._voiceChannel!, this.connection!);
             this.currentSound = sound;
             this.soundListen(this.currentSound);
-            resolve("Now playing" + musicalEmoji + sound.ToString() + musicalEmoji);
+            resolve("Now playing" + musicalEmoji + sound.toString() + musicalEmoji);
         });
     }
 
@@ -62,7 +62,7 @@ export class GuildVoiceStateManager extends EventEmitter {
      * Stops playback.
      * @returns Returns a promise containing feedback based on the result of the stop.
      */
-    public Stop(): Promise<string> {
+    public stop(): Promise<string> {
         return new Promise( (resolve, reject) => {
             if (this.connection === undefined)
                 reject("No voice connection");
@@ -80,7 +80,7 @@ export class GuildVoiceStateManager extends EventEmitter {
      * @param channel The voice channel to join.
      * @returns Returns a promise containing feedback based on the result of the join.
      */
-    public Join(channel: VoiceChannel): Promise<string> {
+    public join(channel: VoiceChannel): Promise<string> {
         return new Promise( (resolve, reject) => {
             this._voiceChannel = channel;
             this._voiceChannel.join()
@@ -98,7 +98,7 @@ export class GuildVoiceStateManager extends EventEmitter {
      * Leaves a voice channel, if connected to one.
      * @returns Returns a promise containing feedback based on the result of the leave.
      */
-    public Leave(): Promise<string> {
+    public leave(): Promise<string> {
         return new Promise( (resolve, reject) => {
             if (this._voiceChannel === undefined) {
                 reject("No voice connection");
@@ -145,18 +145,18 @@ export class GuildVoiceStateManager extends EventEmitter {
     /**
      * The current status of the GuildVoiceStateManager.
      */
-    get Status(): VoiceStatus {
+    get status(): VoiceStatus {
         return this._status;
     }
 
     /**
      * The voice channel of the guild the bot is currently connected to.
      */
-    get VoiceChannel(): VoiceChannel | undefined {
+    get voiceChannel(): VoiceChannel | undefined {
         return this._voiceChannel;
     }
 
-    set VoiceChannel(value) {
+    set voiceChannel(value) {
         this._voiceChannel = value;
     }
 

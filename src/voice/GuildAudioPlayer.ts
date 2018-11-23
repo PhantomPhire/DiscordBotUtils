@@ -1,10 +1,10 @@
-import {Client, Guild, TextChannel, VoiceChannel, VoiceConnection} from "discord.js";
+import {TextChannel, VoiceChannel} from "discord.js";
 import {Sound} from "./Sound";
 import {GuildVoiceStateManager} from "./GuildVoiceStateManager";
 import {VoiceStatus} from "./EVoiceStatus";
 import {Queue} from "../Queue";
-import {ServedGuildSaveState} from "./ServedGuildSaveState";
-import {getClient} from "../client";
+import {GuildAudioPlayerSaveState} from "./GuildAudioPlayerSaveState";
+import {ClientAccess} from "../ClientAccess";
 import fs = require("fs");
 
 /**
@@ -16,11 +16,11 @@ const musicalEmoji = " :musical_note: ";
 /**
  * Represents a Discord guild being served by a Discord bot.
  */
-export class ServedGuild {
+export class GuildAudioPlayer {
     /**
      * A static map of all guilds being served by this bot.
      */
-    private static guildMap: Map<string, ServedGuild> = new Map();
+    private static guildMap: Map<string, GuildAudioPlayer> = new Map();
 
     /**
      * The id of the guild this instance represents
@@ -60,28 +60,42 @@ export class ServedGuild {
 
     /**
      * Gets a ServedGuild instance from the guild map.
-     * @param id
+     * @param id The id of the GuildAudioPlayer to retrieve
      */
-    public static GetServerdGuild(id: string): ServedGuild {
-        if (!ServedGuild.guildMap.has(id)) {
-            ServedGuild.guildMap.set(id, new ServedGuild(id));
+    public static getGuildAudioPlayer(id: string): GuildAudioPlayer {
+        if (!GuildAudioPlayer.guildMap.has(id)) {
+            GuildAudioPlayer.guildMap.set(id, new GuildAudioPlayer(id));
         }
 
-        return ServedGuild.guildMap.get(id)!;
+        return GuildAudioPlayer.guildMap.get(id)!;
+    }
+
+    /**
+     * Loads all saved guild states from memory.
+     */
+    public static loadPersistentGuilds() {
+        if (fs.existsSync(__dirname + "/guildMap.json")) {
+            let file = fs.readFileSync(__dirname + "/guildMap.json");
+            let guilds = JSON.parse(file.toString()) as GuildAudioPlayerSaveState[];
+
+            for (let i = 0; i < guilds.length; i++) {
+                GuildAudioPlayer.loadSaveState(guilds[i]);
+            }
+        }
     }
 
     /**
      * Loads a saved guild state. This is utilized to save guild info between run times.
      * @param state The state to load into the ServedGuild.
      */
-    public static LoadSaveState(state: ServedGuildSaveState) {
-        if (!ServedGuild.guildMap.has(state.Id)) {
-            let sGuild = new ServedGuild(state.Id);
+    private static loadSaveState(state: GuildAudioPlayerSaveState) {
+        if (!GuildAudioPlayer.guildMap.has(state.Id)) {
+            let sGuild = new GuildAudioPlayer(state.Id);
             if (state.BoundVoiceChannelId !== undefined)
-                sGuild.BoundVoiceChannel = getClient()!.channels.get(state.BoundVoiceChannelId) as VoiceChannel;
+                sGuild.BoundVoiceChannel = ClientAccess.client()!.channels.get(state.BoundVoiceChannelId) as VoiceChannel;
             if (state.FeedbackChannelId !== undefined)
-                sGuild.FeedbackChannel = getClient()!.channels.get(state.FeedbackChannelId) as TextChannel;
-            ServedGuild.guildMap.set(state.Id, sGuild);
+                sGuild.FeedbackChannel = ClientAccess.client()!.channels.get(state.FeedbackChannelId) as TextChannel;
+            GuildAudioPlayer.guildMap.set(state.Id, sGuild);
         }
     }
 
@@ -89,57 +103,57 @@ export class ServedGuild {
      * Adds a sound to the play queue.
      * @param sound The sound to be added.
      */
-    public Add(sound: Sound) {
-        this._queue.Enqueue(sound);
+    public add(sound: Sound) {
+        this._queue.enqueue(sound);
         this.sendFeedback("Added" + musicalEmoji  + sound.toString() + musicalEmoji + " for playback");
     }
 
     /**
      * Removes the next sound in the play queue.
      */
-    public RemoveNext() {
-        if (this._queue.IsEmpty()) {
+    public removeNext() {
+        if (this._queue.isEmpty()) {
             this.sendFeedback("Nothing in playlist");
             return;
         }
 
-        let sound = this._queue.Dequeue();
-        this.sendFeedback("Successfully removed" + musicalEmoji + sound!.ToString() + musicalEmoji);
+        let sound = this._queue.dequeue();
+        this.sendFeedback("Successfully removed" + musicalEmoji + sound!.toString() + musicalEmoji);
     }
 
     /**
      * Clears the play queue.
      */
-    public Clear() {
-        this._queue.Clear();
+    public clear() {
+        this._queue.clear();
     }
 
     /**
      * Starts playback of the next sound in the play queue.
      * Will not play if there is no voice channel specified or joined.
      */
-    public Play() {
-        if (this._manager.Status === VoiceStatus.Playing) {
+    public play() {
+        if (this._manager.status === VoiceStatus.Playing) {
             this.sendFeedback("Already playing");
             return;
         }
-        if (this._queue.IsEmpty()) {
+        if (this._queue.isEmpty()) {
             this.sendFeedback("Nothing in playlist");
             return;
         }
 
-        let sound = this._queue.Dequeue();
+        let sound = this._queue.dequeue();
 
-        if (this._manager.Status === VoiceStatus.Disconnected) {
+        if (this._manager.status === VoiceStatus.Disconnected) {
             if (this._boundVoiceChannel === undefined) {
                 this.sendFeedback("No voice channel to bind to");
                 return;
             }
 
-            this._manager.Join(this._boundVoiceChannel!)
+            this._manager.join(this._boundVoiceChannel!)
             .then( (joinMessage) => {
                 console.log(joinMessage);
-                this._manager.Play(sound!)
+                this._manager.play(sound!)
                 .then( (playMessage) => {
                     this.sendFeedback(playMessage);
                 }).catch( (reason: string) => { this.sendFeedback(reason); });
@@ -147,7 +161,7 @@ export class ServedGuild {
         }
 
         else {
-            this._manager.Play(sound!)
+            this._manager.play(sound!)
             .then( (playMessage) => {
                 this.sendFeedback(playMessage);
             }).catch( (reason: string) => { this.sendFeedback(reason); });
@@ -157,21 +171,21 @@ export class ServedGuild {
     /**
      * Skips the sound currently being played and plays the next in queue.
      */
-    public Skip() {
-        if (this._queue.IsEmpty()) {
-            this.Stop();
+    public skip() {
+        if (this._queue.isEmpty()) {
+            this.stop();
             return;
         }
 
-        this._manager.Stop()
+        this._manager.stop()
         .catch( (reason: string) => { this.sendFeedback(reason); });
     }
 
     /**
      * Stops sound playback.
      */
-    public Stop() {
-        this._manager.Stop()
+    public stop() {
+        this._manager.stop()
         .then( (message) => {
             this.sendFeedback("Playback stopped");
         }).catch( (reason: string) => { this.sendFeedback(reason); });
@@ -181,14 +195,14 @@ export class ServedGuild {
      * Joins a voice channel and sets it as the bound channel.
      * @param channel The voice channel to join.
      */
-    public Join(channel: VoiceChannel) {
-        if (channel === this._manager.VoiceChannel) {
+    public join(channel: VoiceChannel) {
+        if (channel === this._manager.voiceChannel) {
             this.sendFeedback("Already there");
             return;
         }
 
         this.BoundVoiceChannel = channel;
-        this._manager.Join(this._boundVoiceChannel!)
+        this._manager.join(this._boundVoiceChannel!)
         .then( (joinMessage) => {
             this.sendFeedback("Joined " + channel.ToString() + " and set as bound voice channel");
         }).catch( (reason: string) => { this.sendFeedback(reason); });
@@ -197,26 +211,26 @@ export class ServedGuild {
     /**
      * Leaves the current voice channel.
      */
-    public Leave() {
-        if (this._manager.VoiceChannel === undefined) {
+    public leave() {
+        if (this._manager.voiceChannel === undefined) {
             this.sendFeedback("Not in a channel");
             return;
         }
 
-        let channel = this._manager.VoiceChannel;
-        this._manager.Leave().catch(console.error);
+        let channel = this._manager.voiceChannel;
+        this._manager.leave().catch(console.error);
         this.sendFeedback("Left " + channel!.ToString());
     }
 
     /**
      * Gets a string representation of all members in queue.
      */
-    public GetQueue(): string {
+    public getQueueListing(): string {
         let info = "The following sounds are in the queue:";
-        let queueMembers = this._queue.ToArray();
+        let queueMembers = this._queue.toArray();
 
         for (let i = 0; i < queueMembers.length; i++) {
-            info += "\n\n" + (i + 1) + ". " + queueMembers[i].ToString();
+            info += "\n\n" + (i + 1) + ". " + queueMembers[i].toString();
         }
 
         return info;
@@ -226,13 +240,13 @@ export class ServedGuild {
      * Plays the next song in the play queue or leaves the channel if queue is empty.
      */
     private next() {
-        if (this._queue.IsEmpty()) {
-            this.Leave();
+        if (this._queue.isEmpty()) {
+            this.leave();
             return;
         }
 
-        let sound = this._queue.Dequeue();
-        this._manager.Play(sound!)
+        let sound = this._queue.dequeue();
+        this._manager.play(sound!)
         .then( (playMessage) => {
             this.sendFeedback(playMessage);
         }).catch( (err) => {
@@ -254,16 +268,16 @@ export class ServedGuild {
      * Saves the current state of the guild to be referenced across run times.
      */
     private saveState() {
-        let guildArr = new Array<ServedGuildSaveState>();
+        let guildArr = new Array<GuildAudioPlayerSaveState>();
 
-        ServedGuild.guildMap.forEach( (value, key, map) => {
+        GuildAudioPlayer.guildMap.forEach( (value, key, map) => {
             let boundVoiceChannelId, feedbackChannelId;
             if (value.BoundVoiceChannel !== undefined)
                 boundVoiceChannelId = value.BoundVoiceChannel.id;
             if (value.FeedbackChannel !== undefined)
                 feedbackChannelId = value.FeedbackChannel.id;
 
-            let sGuildSave = new ServedGuildSaveState(value.Id, boundVoiceChannelId, feedbackChannelId);
+            let sGuildSave = new GuildAudioPlayerSaveState(value.Id, boundVoiceChannelId, feedbackChannelId);
             guildArr.push(sGuildSave);
         });
 
@@ -286,7 +300,7 @@ export class ServedGuild {
 
     set BoundVoiceChannel(value) {
         this._boundVoiceChannel = value;
-        if (ServedGuild.guildMap.has(this._id))
+        if (GuildAudioPlayer.guildMap.has(this._id))
             this.saveState();
     }
 
@@ -299,21 +313,7 @@ export class ServedGuild {
 
     set FeedbackChannel(value) {
         this._feedbackChannel = value;
-        if (ServedGuild.guildMap.has(this._id))
+        if (GuildAudioPlayer.guildMap.has(this._id))
             this.saveState();
-    }
-}
-
-/**
- * Loads all saved guild states from memory.
- */
-export function loadState() {
-    if (fs.existsSync(__dirname + "/guildMap.json")) {
-        let file = fs.readFileSync(__dirname + "/guildMap.json");
-        let guilds = JSON.parse(file.toString()) as ServedGuildSaveState[];
-
-        for (let i = 0; i < guilds.length; i++) {
-            ServedGuild.LoadSaveState(guilds[i]);
-        }
     }
 }

@@ -1,7 +1,7 @@
 /**
  * Contains elements of a ServedGuild to be saved and persist across run times.
  */
-export class ServedGuildSaveState {
+export class GuildAudioPlayerSaveState {
     /**
      * The id of the guild.
      */

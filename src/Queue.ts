@@ -18,42 +18,42 @@ export class Queue<T> {
      * Appends a new value to the end of the Queue.
      * @param val The value to appends.
      */
-    public Enqueue(val: T) {
+    public enqueue(val: T) {
         this._store.push(val);
     }
 
     /**
      * Removes the value at the front of the Queue and returns it.
      */
-    public Dequeue(): T | undefined {
+    public dequeue(): T | undefined {
         return this._store.shift();
     }
 
     /**
      * Returns the Queue as an array.
      */
-    public ToArray(): Array<T> {
+    public toArray(): Array<T> {
         return this._store;
     }
 
     /**
      * Clears the Queue.
      */
-    public Clear() {
+    public clear() {
         this._store = [];
     }
 
     /**
      * Checks if the Queue is empty.
      */
-    public IsEmpty(): boolean {
-        return this.Length < 1;
+    public isEmpty(): boolean {
+        return this.length < 1;
     }
 
     /**
      * The current length of the Queue.
      */
-    get Length() {
+    get length() {
         return this._store.length;
     }
 }

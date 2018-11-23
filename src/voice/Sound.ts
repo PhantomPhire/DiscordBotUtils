@@ -1,4 +1,4 @@
-import {StreamDispatcher, VoiceConnection} from "discord.js";
+import {StreamDispatcher, VoiceConnection, VoiceChannel} from "discord.js";
 import {EventEmitter} from "events";
 
 /**
@@ -21,9 +21,10 @@ export abstract class Sound extends EventEmitter {
 
     /**
      * Starts playback of the sound.
+     * @param channel The voice channel to play the sound on.
      * @param connection The connection to be utlizied for playing audio.
      */
-    public abstract Play(connection: VoiceConnection): Promise<StreamDispatcher>;
+    public abstract play(channel: VoiceChannel, connection: VoiceConnection): Promise<StreamDispatcher>;
 
     /**
      * Ceases playback of the sound.
@@ -37,5 +38,5 @@ export abstract class Sound extends EventEmitter {
     /**
      * Translates sound into a string value to be output.
      */
-    public abstract ToString(): string;
+    public abstract toString(): string;
 }

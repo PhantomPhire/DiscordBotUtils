@@ -1,8 +1,6 @@
-export {ServedGuild, loadState} from "./src/voice/ServedGuild";
+export {GuildAudioPlayer} from "./src/voice/GuildAudioPlayer";
 export {YouTubeSound} from "./src/voice/YouTubeSound";
-export {initializeClient, getClient} from "./src/client";
-export {initializeLogin} from "./src/login";
+export {ClientAccess} from "./src/ClientAccess";
+export {LoginManager} from "./src/LoginManager";
 export {Queue} from "./src/Queue";
-export {findChannel, findMemberDisplayName, findMemberDisplayNamePartial,
-        findMemberName, findMemberNamePartial, findMemberUsername,
-        findMemberUsernamePartial, findVoiceChannel, findVoiceChannelPartial} from "./src/guildFind";
+export {NameResolution} from "./src/NameResolution";
