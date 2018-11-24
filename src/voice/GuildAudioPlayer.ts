@@ -316,4 +316,11 @@ export class GuildAudioPlayer {
         if (GuildAudioPlayer.guildMap.has(this._id))
             this.saveState();
     }
+
+    /**
+     * Indicates if the player is currently playing.
+     */
+    get playing(): boolean {
+        return this._manager.status === VoiceStatus.Playing;
+    }
 }
