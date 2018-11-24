@@ -1558,6 +1558,7 @@ declare module 'discord.js' {
 		disabledEvents?: WSEventType[];
 		ws?: WebSocketOptions;
 		http?: HTTPOptions;
+		owner?: string;
 	};
 
 	type CollectorHandler<K, V> = { key: K, value: V };
