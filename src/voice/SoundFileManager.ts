@@ -19,7 +19,7 @@ export abstract class SoundFileManager {
     /**
      * Details the types supported by this sound system.
      */
-    private static _supportedTypes: Array<string> = [ "mp3", "wav" ];
+    private static _supportedTypes: Map<string, string>;
 
     /**
      * Initializes the FileSound system with its path and reads in all sound filenames.
@@ -27,6 +27,7 @@ export abstract class SoundFileManager {
      */
     public static initialize(path: string) {
         this._soundsPath = path;
+        this.initializeSupportedTypes();
         this.readSoundDirectory();
     }
 
@@ -78,9 +79,21 @@ export abstract class SoundFileManager {
 
         for (let i = 0; i < items.length; i++) {
             let temp = items[i].split(".");
-            if (this._supportedTypes.indexOf(temp[temp.length - 1])) {
+            if (this._supportedTypes.has(temp[temp.length - 1].toLowerCase())) {
                 this._soundFiles.set(temp[0].toLowerCase(), new FileSound(this._soundsPath, items[i]));
             }
+            else {
+                console.log("Usupported file type " + temp[temp.length - 1] + " found in SoundFileManager");
+            }
         }
+    }
+
+    /**
+     * Initializes the set of supported file types
+     */
+    private static initializeSupportedTypes() {
+        this._supportedTypes = new Map<string, string>();
+        this._supportedTypes.set("mp3", "mp3");
+        this._supportedTypes.set("wav", "wav");
     }
 }

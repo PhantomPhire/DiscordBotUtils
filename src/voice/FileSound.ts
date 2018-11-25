@@ -37,7 +37,7 @@ export class FileSound extends Sound {
             if (connection === undefined)
                 reject("Voice connection undefined in FileSound.");
 
-            this._dispatcher = connection.playFile(this._path + this._filename);
+            this._dispatcher = connection.playFile(this._path + "/" + this._filename);
 
             this._dispatcher.once("end", (reason: string) => {
                 this.emit("end", reason, channel);

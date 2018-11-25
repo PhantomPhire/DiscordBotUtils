@@ -241,7 +241,7 @@ export class GuildAudioPlayer {
      */
     private next() {
         if (this._queue.isEmpty()) {
-            this.leave();
+            //this.leave();
             return;
         }
 

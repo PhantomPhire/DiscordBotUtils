@@ -128,7 +128,7 @@ export abstract class NameResolution {
         let n = first.length;
         let m = second.length;
         let d: Array<Array<number>> = [];
-        for (let i = 0; i < Math.max(n, m); i++) {
+        for (let i = 0; i <= Math.max(n, m); i++) {
             d[i] = [];
         }
 
