@@ -44,6 +44,7 @@ export class FileSound extends Sound {
             });
 
             this._dispatcher.once("error", (error: Error) => {
+                console.error("Error in FileSound.play: " + error);
                 this.emit("error", error, channel);
             });
 

@@ -48,10 +48,11 @@ export class GuildVoiceStateManager extends EventEmitter {
      */
     public play(sound: Sound): Promise<string> {
         return new Promise( (resolve, reject) => {
-            if (this.connection === undefined || this._voiceChannel === undefined)
+            if (this.status !== VoiceStatus.Waiting || this.connection === undefined || this._voiceChannel === undefined)
                 reject("No voice connection");
 
-            sound.play(this._voiceChannel!, this.connection!);
+            sound.play(this._voiceChannel!, this.connection!)
+            .catch((error) => console.error("Error in GuildVoiceStateManager.play: " + error));
             this.currentSound = sound;
             this.assignSoundListeners(this.currentSound);
             resolve("Now playing" + musicalEmoji + sound.toString() + musicalEmoji);
@@ -81,6 +82,8 @@ export class GuildVoiceStateManager extends EventEmitter {
      * @returns Returns a promise containing feedback based on the result of the join.
      */
     public join(channel: VoiceChannel): Promise<string> {
+        this._status = VoiceStatus.Joining;
+
         return new Promise( (resolve, reject) => {
             this._voiceChannel = channel;
             this._voiceChannel.join()
@@ -89,7 +92,8 @@ export class GuildVoiceStateManager extends EventEmitter {
                 this.connection = connection;
                 resolve("Successfully joined " + channel.toString());
             }).catch( (err) => {
-                console.error(err);
+                this.connection = undefined;
+                console.error("Error in GuildVoiceStateManager.join: " + err);
                 reject("Could not join channel. Error: " + err);
             });
         });

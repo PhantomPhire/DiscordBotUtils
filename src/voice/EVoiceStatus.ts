@@ -13,6 +13,11 @@ export enum VoiceStatus {
     Waiting,
 
     /**
+     * The bot is currently in the process of joining
+     */
+    Joining,
+
+    /**
      * The bot is not currently in a voice channel of the guild.
      */
     Disconnected

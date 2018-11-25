@@ -167,14 +167,20 @@ export class GuildAudioPlayer {
                 .then( (playMessage) => {
                     this.sendFeedback(playMessage);
                 }).catch( (reason: string) => { this.sendFeedback(reason); });
-            }).catch( (reason: string) => { this.sendFeedback(reason); });
+            }).catch( (reason: string) => {
+                console.error("Error in GuildAudioPlayer.play trying to play right after joining: " + reason);
+                this.sendFeedback(reason);
+            });
         }
 
         else {
             this._manager.play(sound!)
             .then( (playMessage) => {
                 this.sendFeedback(playMessage);
-            }).catch( (reason: string) => { this.sendFeedback(reason); });
+            }).catch( (reason: string) => {
+                console.error("Error in GuildAudioPlayer.play: " + reason);
+                this.sendFeedback(reason);
+            });
         }
     }
 
@@ -218,7 +224,10 @@ export class GuildAudioPlayer {
         this._manager.join(this._boundVoiceChannel!)
         .then( (joinMessage) => {
             this.sendFeedback("Joined " + channel.toString() + " and set as bound voice channel");
-        }).catch( (reason: string) => { this.sendFeedback(reason); });
+        }).catch( (reason: string) => {
+            console.error("Error in GuildAudioPlayer.join: " + reason);
+            this.sendFeedback(reason);
+        });
     }
 
     /**
@@ -231,7 +240,10 @@ export class GuildAudioPlayer {
         }
 
         let channel = this._manager.voiceChannel;
-        this._manager.leave().catch(console.error);
+        this._manager.leave()
+        .catch((error) => {
+            console.error("Error in GuildAudioPlayer.leave: " + error);
+        });
         this.sendFeedback("Left " + channel!.toString());
     }
 
@@ -264,7 +276,7 @@ export class GuildAudioPlayer {
         .then( (playMessage) => {
             this.sendFeedback(playMessage);
         }).catch( (err) => {
-            console.error(err);
+            console.error("Error in GuildAudioPlayer.next: " + err);
             this.sendFeedback("Someone dun goofed");
         });
     }
@@ -355,6 +367,6 @@ export class GuildAudioPlayer {
      * Indicates if the player is connected to a voice channel.
      */
     get connected(): boolean {
-        return this._manager.status !== VoiceStatus.Disconnected;
+        return this._manager.status !== VoiceStatus.Disconnected && this._manager.status !== VoiceStatus.Joining;
     }
 }
