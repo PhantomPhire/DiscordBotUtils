@@ -53,7 +53,7 @@ export class GuildVoiceStateManager extends EventEmitter {
 
             sound.play(this._voiceChannel!, this.connection!);
             this.currentSound = sound;
-            this.soundListen(this.currentSound);
+            this.assignSoundListeners(this.currentSound);
             resolve("Now playing" + musicalEmoji + sound.toString() + musicalEmoji);
         });
     }
@@ -71,7 +71,7 @@ export class GuildVoiceStateManager extends EventEmitter {
                 reject("Not currently playing");
 
             this._currentSound!.stop();
-            resolve("Successfully stopped");
+            resolve("Successfully stopped playing.");
         });
     }
 
@@ -89,7 +89,7 @@ export class GuildVoiceStateManager extends EventEmitter {
                 this.connection = connection;
                 resolve("Successfully joined " + channel.toString());
             }).catch( (err) => {
-                reject("Could not join channel");
+                reject("Could not join channel. Error: " + err);
             });
         });
     }
@@ -106,7 +106,7 @@ export class GuildVoiceStateManager extends EventEmitter {
 
             this._voiceChannel!.leave();
             this._voiceChannel = undefined;
-            resolve("Successfully left");
+            resolve("Successfully left voice channel.");
         });
     }
 
@@ -114,16 +114,16 @@ export class GuildVoiceStateManager extends EventEmitter {
      * Sets up event listeners for "end" and "error" events for a sound.
      * @param sound The sound to setup listeners for.
      */
-    private soundListen(sound: Sound) {
+    private assignSoundListeners(sound: Sound) {
         sound.once("end", (reason: string, channel: VoiceChannel) => {
-            console.log("Disconnect reason: " + reason);
+            console.log("Stream end reason: " + reason);
             this.currentSound = undefined;
             this.emit("next");
         });
         sound.once("error", (error: Error, channel: VoiceChannel) => {
-            console.log("Error: " + error);
+            console.error("Error in GuildVoiceStateManager.assignSoundListeners: " + error);
             this.currentSound = undefined;
-            this.emit("Error", error);
+            this.emit("error", error);
         });
     }
 

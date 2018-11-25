@@ -48,6 +48,11 @@ export class GuildAudioPlayer {
     private _feedbackChannel?: TextChannel;
 
     /**
+     * If true, the bot will join and play sounds upon them being added to queue and will leave channel after playing.
+     */
+    private _joinAndPlay: boolean = false;
+
+    /**
      * Initializes a new instance of the ServedGuild class.
      * @param id The id of the guild being served.
      */
@@ -91,10 +96,11 @@ export class GuildAudioPlayer {
     private static loadSaveState(state: GuildAudioPlayerSaveState) {
         if (!GuildAudioPlayer.guildMap.has(state.Id)) {
             let sGuild = new GuildAudioPlayer(state.Id);
+            sGuild._joinAndPlay = state.JoinAndPlay;
             if (state.BoundVoiceChannelId !== undefined)
-                sGuild.BoundVoiceChannel = ClientAccess.client()!.channels.get(state.BoundVoiceChannelId) as VoiceChannel;
+                sGuild._boundVoiceChannel = ClientAccess.client()!.channels.get(state.BoundVoiceChannelId) as VoiceChannel;
             if (state.FeedbackChannelId !== undefined)
-                sGuild.FeedbackChannel = ClientAccess.client()!.channels.get(state.FeedbackChannelId) as TextChannel;
+                sGuild._feedbackChannel = ClientAccess.client()!.channels.get(state.FeedbackChannelId) as TextChannel;
             GuildAudioPlayer.guildMap.set(state.Id, sGuild);
         }
     }
@@ -106,6 +112,10 @@ export class GuildAudioPlayer {
     public add(sound: Sound) {
         this._queue.enqueue(sound);
         this.sendFeedback("Added" + musicalEmoji  + sound.toString() + musicalEmoji + " for playback");
+
+        if (this.joinAndPlay && !this.playing) {
+            this.play();
+        }
     }
 
     /**
@@ -188,6 +198,9 @@ export class GuildAudioPlayer {
         this._manager.stop()
         .then( (message) => {
             this.sendFeedback("Playback stopped");
+
+            if (this.joinAndPlay)
+                this.leave();
         }).catch( (reason: string) => { this.sendFeedback(reason); });
     }
 
@@ -201,7 +214,7 @@ export class GuildAudioPlayer {
             return;
         }
 
-        this.BoundVoiceChannel = channel;
+        this.boundVoiceChannel = channel;
         this._manager.join(this._boundVoiceChannel!)
         .then( (joinMessage) => {
             this.sendFeedback("Joined " + channel.toString() + " and set as bound voice channel");
@@ -241,7 +254,8 @@ export class GuildAudioPlayer {
      */
     private next() {
         if (this._queue.isEmpty()) {
-            //this.leave();
+            if (this._joinAndPlay)
+                this.leave();
             return;
         }
 
@@ -272,12 +286,12 @@ export class GuildAudioPlayer {
 
         GuildAudioPlayer.guildMap.forEach( (value, key, map) => {
             let boundVoiceChannelId, feedbackChannelId;
-            if (value.BoundVoiceChannel !== undefined)
-                boundVoiceChannelId = value.BoundVoiceChannel.id;
-            if (value.FeedbackChannel !== undefined)
-                feedbackChannelId = value.FeedbackChannel.id;
+            if (value.boundVoiceChannel !== undefined)
+                boundVoiceChannelId = value.boundVoiceChannel.id;
+            if (value.feedbackChannel !== undefined)
+                feedbackChannelId = value.feedbackChannel.id;
 
-            let sGuildSave = new GuildAudioPlayerSaveState(value.Id, boundVoiceChannelId, feedbackChannelId);
+            let sGuildSave = new GuildAudioPlayerSaveState(value.id, value.joinAndPlay, boundVoiceChannelId, feedbackChannelId);
             guildArr.push(sGuildSave);
         });
 
@@ -287,18 +301,31 @@ export class GuildAudioPlayer {
     /**
      * The id of the guild.
      */
-    get Id(): string {
+    get id(): string {
         return this._id;
+    }
+
+    /**
+     * If true, the bot will join and play sounds upon them being added to queue and will leave channel after playing.
+     */
+    get joinAndPlay(): boolean {
+        return this._joinAndPlay;
+    }
+
+    set joinAndPlay(value) {
+        this._joinAndPlay = value;
+        if (GuildAudioPlayer.guildMap.has(this._id))
+            this.saveState();
     }
 
     /**
      * The voice channel of the guild the bot is bound to.
      */
-    get BoundVoiceChannel(): VoiceChannel | undefined {
+    get boundVoiceChannel(): VoiceChannel | undefined {
         return this._boundVoiceChannel;
     }
 
-    set BoundVoiceChannel(value) {
+    set boundVoiceChannel(value) {
         this._boundVoiceChannel = value;
         if (GuildAudioPlayer.guildMap.has(this._id))
             this.saveState();
@@ -307,11 +334,11 @@ export class GuildAudioPlayer {
     /**
      * The text channel of the guild the bot is bound to.
      */
-    get FeedbackChannel(): TextChannel | undefined {
+    get feedbackChannel(): TextChannel | undefined {
         return this._feedbackChannel;
     }
 
-    set FeedbackChannel(value) {
+    set feedbackChannel(value) {
         this._feedbackChannel = value;
         if (GuildAudioPlayer.guildMap.has(this._id))
             this.saveState();
@@ -322,5 +349,12 @@ export class GuildAudioPlayer {
      */
     get playing(): boolean {
         return this._manager.status === VoiceStatus.Playing;
+    }
+
+    /**
+     * Indicates if the player is connected to a voice channel.
+     */
+    get connected(): boolean {
+        return this._manager.status !== VoiceStatus.Disconnected;
     }
 }
