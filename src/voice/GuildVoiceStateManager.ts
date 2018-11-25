@@ -89,6 +89,7 @@ export class GuildVoiceStateManager extends EventEmitter {
                 this.connection = connection;
                 resolve("Successfully joined " + channel.toString());
             }).catch( (err) => {
+                console.error(err);
                 reject("Could not join channel. Error: " + err);
             });
         });
