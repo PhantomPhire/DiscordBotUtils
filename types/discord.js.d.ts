@@ -387,7 +387,7 @@ declare module 'discord.js' {
 		public lastMessageID: Snowflake;
 		public messages: Collection<Snowflake, Message>;
 		public recipient: User;
-		public ToString(): string;
+		public toString(): string;
 	}
 
 	export class Emoji {
@@ -438,7 +438,7 @@ declare module 'discord.js' {
 		public addUser(accessTokenOrID: UserResolvable | string, nick?: string): Promise<GroupDMChannel>
 		public equals(channel: GroupDMChannel): boolean;
 		public setIcon(icon: Base64Resolvable | BufferResolvable): Promise<GroupDMChannel>;
-		public ToString(): string;
+		public toString(): string;
 	}
 
 	export class Guild {
@@ -584,7 +584,7 @@ declare module 'discord.js' {
 		public setParent(parent: ChannelResolvable, reason?: string): Promise<GuildChannel>
 		public setPosition(position: number, relative?: boolean): Promise<GuildChannel>;
 		public setTopic(topic: string, reason?: string): Promise<GuildChannel>;
-		public ToString(): string;
+		public toString(): string;
 	}
 
 	export class GuildMember extends PartialTextBasedChannel() {
@@ -636,7 +636,7 @@ declare module 'discord.js' {
 		public setNickname(nickname: string, reason?: string): Promise<GuildMember>;
 		public setRoles(roles: Collection<Snowflake, Role> | Role[] | Snowflake[], reason?: string): Promise<GuildMember>;
 		public setVoiceChannel(voiceChannel: ChannelResolvable): Promise<GuildMember>;
-		public ToString(): string;
+		public toString(): string;
 	}
 
 	export class Invite {
@@ -1150,7 +1150,7 @@ declare module 'discord.js' {
 		public fetchProfile(): Promise<UserProfile>;
 		public removeFriend(): Promise<User>;
 		public setNote(note: string): Promise<User>;
-		public ToString(): string;
+		public toString(): string;
 		public typingDurationIn(channel: ChannelResolvable): number;
 		public typingIn(channel: ChannelResolvable): boolean;
 		public typingSinceIn(channel: ChannelResolvable): Date;

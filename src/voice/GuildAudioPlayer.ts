@@ -204,7 +204,7 @@ export class GuildAudioPlayer {
         this.BoundVoiceChannel = channel;
         this._manager.join(this._boundVoiceChannel!)
         .then( (joinMessage) => {
-            this.sendFeedback("Joined " + channel.ToString() + " and set as bound voice channel");
+            this.sendFeedback("Joined " + channel.toString() + " and set as bound voice channel");
         }).catch( (reason: string) => { this.sendFeedback(reason); });
     }
 
@@ -219,7 +219,7 @@ export class GuildAudioPlayer {
 
         let channel = this._manager.voiceChannel;
         this._manager.leave().catch(console.error);
-        this.sendFeedback("Left " + channel!.ToString());
+        this.sendFeedback("Left " + channel!.toString());
     }
 
     /**

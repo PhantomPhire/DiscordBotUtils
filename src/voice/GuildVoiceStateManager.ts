@@ -87,7 +87,7 @@ export class GuildVoiceStateManager extends EventEmitter {
             .then( (connection) => {
                 connection.on("disconnect", (error: Error) => { this.connection = undefined; });
                 this.connection = connection;
-                resolve("Successfully joined " + channel.ToString());
+                resolve("Successfully joined " + channel.toString());
             }).catch( (err) => {
                 reject("Could not join channel");
             });
