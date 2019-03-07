@@ -68,6 +68,26 @@ export abstract class SoundFileManager {
     }
 
     /**
+     * Returns true if a file type is supported
+     * @param file The name of the file
+     */
+    public static fileIsSupported(file: string): boolean {
+        let temp = file.split(".");
+        if (this._supportedTypes.has(temp[temp.length - 1].toLowerCase())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the path to the sound file repository specified in configuration
+     */
+    public static soundPath(): string {
+        return this._soundsPath;
+    }
+
+    /**
      * Reads in all sound filenames and caches them
      */
     private static readSoundDirectory() {
