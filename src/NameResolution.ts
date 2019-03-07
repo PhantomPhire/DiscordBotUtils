@@ -102,7 +102,7 @@ export abstract class NameResolution {
      * @param first The first name in the comparison
      * @param second The second name in the comparison
      */
-    private static compareNames(first: string, second: string): boolean {
+    public static compareNames(first: string, second: string): boolean {
         return (first === second ||
                 NameResolution.testLevenshteinDistance(first, second) ||
                 second.startsWith(first));

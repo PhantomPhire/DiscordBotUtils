@@ -1,5 +1,6 @@
 import {Collection} from "discord.js";
 import {FileSound} from "./FileSound";
+import {NameResolution} from "../NameResolution";
 import fs = require("fs");
 
 /**
@@ -48,10 +49,11 @@ export abstract class SoundFileManager {
      * @param name The name of the FileSound to get
      */
     public static getFileSound(name: string): FileSound | undefined {
-        if (this._soundFiles.has(name.toLowerCase())) {
-            let soundFile = this._soundFiles.get(name.toLowerCase());
-            return new FileSound(this._soundsPath, soundFile!.filename);
-        }
+        this._soundFiles.forEach((value: FileSound, key: string, map: Map<string, FileSound>) => {
+            if (NameResolution.compareNames(name.toLowerCase(), key)) {
+                return value;
+            }
+        });
 
         return undefined;
     }

@@ -1,5 +1,5 @@
 import {Sound} from "./Sound";
-import {Collection, StreamDispatcher, VoiceChannel, VoiceConnection} from "discord.js";
+import {StreamDispatcher, VoiceChannel, VoiceConnection} from "discord.js";
 
 /**
  * Represents a file to be played as a sound by a discord bot utilizing the discord.js library.
