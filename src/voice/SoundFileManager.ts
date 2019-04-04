@@ -49,11 +49,12 @@ export abstract class SoundFileManager {
      * @param name The name of the FileSound to get
      */
     public static getFileSound(name: string): FileSound | undefined {
-        this._soundFiles.forEach((value: FileSound, key: string, map: Map<string, FileSound>) => {
-            if (NameResolution.compareNames(name.toLowerCase(), key)) {
-                return value;
+        let soundFilesArr = this._soundFiles.array();
+        for (let i = 0; i < soundFilesArr.length; i++) {
+            if (NameResolution.compareNames(name.toLowerCase(), soundFilesArr[i].filename.toLowerCase())) {
+                return new FileSound(this._soundsPath, soundFilesArr[i].filename);
             }
-        });
+        }
 
         return undefined;
     }
