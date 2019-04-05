@@ -50,9 +50,16 @@ export abstract class SoundFileManager {
      */
     public static getFileSound(name: string): FileSound | undefined {
         let soundFilesArr = this._soundFiles.array();
+        let soundFileNames = new Array<string>();
         for (let i = 0; i < soundFilesArr.length; i++) {
-            if (NameResolution.compareNames(name.toLowerCase(), soundFilesArr[i].filename.toLowerCase())) {
-                return new FileSound(this._soundsPath, soundFilesArr[i].filename);
+            soundFileNames.push(soundFilesArr[i].filename.toLowerCase());
+        }
+
+        let result = NameResolution.bestMatch(name.toLowerCase(), soundFileNames);
+        if (result != undefined) {
+            for (let i = 0; i < soundFilesArr.length; i++) {
+                if (result === soundFilesArr[i].filename.toLowerCase())
+                    return new FileSound(this._soundsPath, soundFilesArr[i].filename);
             }
         }
 
